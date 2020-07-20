@@ -86,7 +86,7 @@ def db_backup_job(job_list, db_ip_port):
             # print job_list
             db_instance_id = job_list['db_instance_id']
             db_instance_name = job_list['db_mark']
-            db_container_name = job_list['db_container_name_slave'] if job_list['db_container_name_slave'] else\
+            db_container_name = job_list['db_container_name_subordinate'] if job_list['db_container_name_subordinate'] else\
                 job_list['db_container_name']
             db_service_type = job_list['db_service_type']
             db_passwd = crypto.passwd_deaes(job_list['db_passwd'])
@@ -181,10 +181,10 @@ def db_backup_start(request):
         dbs = request.POST.get('dbs', None)
         tables = request.POST.get('tables', None)
         selectdb = json.loads(request.POST.get('selectdb', None))
-        if selectdb['db_slave'] == '' or selectdb['db_slave'] is None:
-            db_ip_port = selectdb['db_master']
+        if selectdb['db_subordinate'] == '' or selectdb['db_subordinate'] is None:
+            db_ip_port = selectdb['db_main']
         else:
-            db_ip_port = selectdb['db_slave']
+            db_ip_port = selectdb['db_subordinate']
         if None in [db_instance, dbs, tables]:
             return HttpResponse(json.dumps({"result": "failed", "info": "DB信息有误，请对比注册表"}))
         backup_list = []
@@ -196,17 +196,17 @@ def db_backup_start(request):
             item['db_instance_id'] = selectdb['id']
             item['db_instance_name'] = selectdb['db_mark']
             item['db_product'] = selectdb['db_product']
-            item['db_service_name_slave'] = selectdb['db_service_name_slave']
+            item['db_service_name_subordinate'] = selectdb['db_service_name_subordinate']
             item['db_container_name'] = selectdb['db_container_name']
             item['db_mark'] = selectdb['db_mark']
             item['db_service_type'] = selectdb['db_service_type']
-            item['db_master'] = selectdb['db_master']
+            item['db_main'] = selectdb['db_main']
             item['db_env'] = selectdb['db_env']
             item['db_passwd'] = selectdb['db_passwd']
             item['db_service_name'] = selectdb['db_service_name']
             item['db_product_id'] = selectdb['db_product_id']
-            item['db_slave'] = selectdb['db_slave']
-            item['db_container_name_slave'] = selectdb['db_container_name_slave']
+            item['db_subordinate'] = selectdb['db_subordinate']
+            item['db_container_name_subordinate'] = selectdb['db_container_name_subordinate']
             item['db_user_name'] = selectdb['db_user_name']
         # 开始并发处理
         db_backup_multi_process = my_concurrent.MyMultiProcess(10)

@@ -29,8 +29,8 @@ def add_db_instance(request):
         db_job_instance,created = DbJobDbInstance.objects.get_or_create(db_mark=db_mark)
         if not created:
             return HttpResponse(json.dumps({"result":"failed", "info": "实例名重复"}))
-        db_job_instance.db_master = request.POST.get('db_master', None)
-        db_job_instance.db_slave = request.POST.get('db_slave', None)
+        db_job_instance.db_main = request.POST.get('db_main', None)
+        db_job_instance.db_subordinate = request.POST.get('db_subordinate', None)
         db_job_instance.db_product = request.POST.get('db_product', None).split('_')[0]
         try:
             db_job_instance.db_product_id = list(CmdbProductInfo.objects.filter(product_name=request.POST.get('db_product', None).split('_')[0]).values("product_id"))[0]['product_id']
@@ -70,12 +70,12 @@ def delete_instance(request):
 
 def resource():
     data = DbJobDbInstance.objects.all().values()
-    data = [{u"id": int(i['id']), u"db_master": i['db_master'],
-      u"db_slave": i['db_slave'],
+    data = [{u"id": int(i['id']), u"db_main": i['db_main'],
+      u"db_subordinate": i['db_subordinate'],
       u"db_product": i['db_product'],
       u"db_product_id": i['db_product_id'], u"db_env": i['db_env'], u"db_mark": i['db_mark'], u"db_passwd": i['db_passwd'],
-             u"db_container_name": i['db_container_name'],u"db_container_name_slave": i['db_container_name_slave'], u"db_user_name": i['db_user_name'], u"db_service_type": i['db_service_type'],
-             u"db_service_name": i['db_service_name'], u"db_service_name_slave": i['db_service_name_slave']} for i in data]
+             u"db_container_name": i['db_container_name'],u"db_container_name_subordinate": i['db_container_name_subordinate'], u"db_user_name": i['db_user_name'], u"db_service_type": i['db_service_type'],
+             u"db_service_name": i['db_service_name'], u"db_service_name_subordinate": i['db_service_name_subordinate']} for i in data]
     return data
 
 
@@ -89,18 +89,18 @@ def commit_db_instance(request):
     db_id = request.POST.get("id", -1)
     pass_change = request.POST.get("pass_change", 0)
     db_info = {
-        "db_master": request.POST.get("db_master"),
-        "db_slave": request.POST.get('db_slave', None),
+        "db_main": request.POST.get("db_main"),
+        "db_subordinate": request.POST.get('db_subordinate', None),
         "db_product": request.POST.get("db_product"),
         "db_product_id": get_prod_id_by_name(request.POST.get("db_product")),
         "db_env": request.POST.get("db_env"),
         "db_mark": request.POST.get("db_mark"),
         "db_container_name": request.POST.get("db_container_name"),
-        "db_container_name_slave": request.POST.get("db_container_name_slave"),
+        "db_container_name_subordinate": request.POST.get("db_container_name_subordinate"),
         "db_user_name": request.POST.get("db_user_name"),
         "db_service_type": request.POST.get("db_service_type"),
         "db_service_name": request.POST.get("db_service_name"),
-        "db_service_name_slave": request.POST.get("db_service_name_slave"),
+        "db_service_name_subordinate": request.POST.get("db_service_name_subordinate"),
     }
     if int(pass_change) == 1:
         db_info["db_passwd"] = crypto.passwd_aes(request.POST.get("db_passwd"))
